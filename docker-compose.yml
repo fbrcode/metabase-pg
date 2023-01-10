@@ -1,0 +1,46 @@
+version: "3.8"
+services:
+  database:
+    image: postgres:14.5
+    container_name: pg_14_5_metabase
+    platform: linux/amd64
+    restart: always
+    ports:
+      - 5439:5432
+    environment:
+      POSTGRES_PASSWORD: postgres
+      PGDATA: /var/lib/postgresql/data
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      default:
+        aliases:
+          - postgres
+  metabase:
+    image: metabase/metabase:v0.45.1
+    container_name: metabase_0_45_1
+    platform: linux/amd64
+    restart: always
+    ports:
+      - 3001:3000
+    volumes:
+      - dataviz-data:/metabase-data
+    environment:
+      MB_DB_FILE: /metabase-data/metabase.db
+      MB_DB_TYPE: postgres
+      MB_DB_DBNAME: metabase
+      MB_DB_PORT: 5432
+      MB_DB_USER: postgres
+      MB_DB_PASS: postgres
+      MB_DB_HOST: postgres
+    depends_on:
+      - database
+    networks:
+      - default
+volumes:
+  db-data:
+  dataviz-data:
+networks:
+  default:
+    name: metabase-network
