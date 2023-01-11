@@ -1,4 +1,4 @@
-version: "3.8"
+version: "3"
 services:
   database:
     image: postgres:14.5
@@ -6,7 +6,7 @@ services:
     platform: linux/amd64
     restart: always
     ports:
-      - 5439:5432
+      - 5432:5432
     environment:
       POSTGRES_PASSWORD: postgres
       PGDATA: /var/lib/postgresql/data
@@ -18,29 +18,40 @@ services:
         aliases:
           - postgres
   metabase:
-    image: metabase/metabase:v0.45.1
-    container_name: metabase_0_45_1
+    container_name: trantor_metabase_0_45_1
     platform: linux/amd64
-    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: trantor/metabase:v0.45.1
+    restart: on-failure
     ports:
-      - 3001:3000
-    volumes:
-      - dataviz-data:/metabase-data
+      - 3000:3000
+    # volumes:
+    #   - dataviz-data:/metabase-data
     environment:
-      MB_DB_FILE: /metabase-data/metabase.db
+      MB_DB_FILE: /app/metabase-data/metabase.db
       MB_DB_TYPE: postgres
       MB_DB_DBNAME: metabase
       MB_DB_PORT: 5432
       MB_DB_USER: postgres
       MB_DB_PASS: postgres
       MB_DB_HOST: postgres
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
     depends_on:
       - database
     networks:
-      - default
+      default:
+        aliases:
+          - metabase
 volumes:
   db-data:
-  dataviz-data:
+  # dataviz-data:
 networks:
   default:
     name: metabase-network
