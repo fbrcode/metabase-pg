@@ -12,7 +12,8 @@ services:
       PGDATA: /var/lib/postgresql/data
     volumes:
       - db-data:/var/lib/postgresql/data
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./00-init.sql:/docker-entrypoint-initdb.d/00-init.sql
+      - ./01-export.sql:/docker-entrypoint-initdb.d/01-export.sql
     networks:
       default:
         aliases:
